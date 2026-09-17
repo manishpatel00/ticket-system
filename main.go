@@ -65,6 +65,7 @@ func buildRouter(s store.Store, jwtManager *auth.Manager) http.Handler {
 	requireAuth := middleware.RequireAuth(jwtManager)
 
 	// Public routes.
+	mux.HandleFunc("GET /{$}", handlers.Health) // root path
 	mux.HandleFunc("GET /health", handlers.Health)
 	mux.HandleFunc("POST /auth/register", authHandler.Register)
 	mux.HandleFunc("POST /auth/login", authHandler.Login)
