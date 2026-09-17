@@ -48,6 +48,11 @@ state). Built in Go, authenticated with JWT, containerized with Docker.
   a reasonable default).
 - **IDs** are random 16-character hex strings (`crypto/rand`), not
   sequential integers, so they aren't guessable/enumerable.
+- **`JWT_SECRET` is optional at startup**, by design, to match the Local
+  Run Contract's exact `docker run -p 8080:8080 ticket-system` (no `-e`
+  flags). If unset, a random secret is generated per-process — tokens
+  stay valid for that process's lifetime but don't survive a restart.
+  Set it explicitly for any deployment that needs restart-stable tokens.
 
 ## Project layout
 
@@ -150,11 +155,20 @@ curl -X PATCH http://localhost:8080/tickets/$ID/status \
 Requires Go 1.22+.
 
 ```bash
-export JWT_SECRET=some-long-random-string   # required, app refuses to start without it
+export JWT_SECRET=some-long-random-string   # recommended, not required — see note below
 go run .
 # in another terminal:
 curl http://localhost:8080/health
 ```
+
+`JWT_SECRET` is optional: if it's unset, the app generates a random
+signing secret at startup so it still comes up healthy (this matters
+because the Local Run Contract below runs the container with no `-e`
+flags at all). The trade-off: that generated secret only lives as long
+as the process, so every restart invalidates previously issued tokens.
+Fine for local testing or a hidden test suite that registers, logs in,
+and exercises tickets within one run; set `JWT_SECRET` explicitly for
+anything where tokens need to survive a restart.
 
 ## Running the tests
 

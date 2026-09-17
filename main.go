@@ -5,6 +5,8 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"log"
 	"net/http"
@@ -42,12 +44,40 @@ func loadConfig() config {
 	}
 
 	if cfg.jwtSecret == "" {
-		// Fail fast: an empty JWT secret would make every token trivially
-		// forgeable. Better to refuse to start than to run insecurely.
-		log.Fatal("JWT_SECRET environment variable is required (see .env.example)")
+		// The assignment's Local Run Contract runs the container with
+		// no -e flags at all (`docker run -p 8080:8080 ticket-system`),
+		// so the service must come up healthy without JWT_SECRET set.
+		// Refusing to start here would fail that exact contract.
+		//
+		// Trade-off, stated explicitly: we auto-generate a random,
+		// process-lifetime-only secret instead of using any fixed
+		// fallback value. This keeps tokens unforgeable by anyone
+		// outside this running process (never a hardcoded/guessable
+		// secret), at the cost of invalidating all issued tokens on
+		// restart — acceptable for an in-memory store that already
+		// loses all data on restart. For a real deployment, set
+		// JWT_SECRET explicitly (see .env.example) so tokens and the
+		// signing key stay stable across restarts/scaling.
+		generated, err := generateRandomSecret(32)
+		if err != nil {
+			log.Fatalf("JWT_SECRET was not set and generating a fallback secret failed: %v", err)
+		}
+		cfg.jwtSecret = generated
+		log.Println("WARNING: JWT_SECRET not set — using an auto-generated, process-lifetime-only secret. " +
+			"Set JWT_SECRET explicitly for any deployment where tokens must survive a restart.")
 	}
 
 	return cfg
+}
+
+// generateRandomSecret returns a cryptographically random hex-encoded
+// string of n random bytes, suitable as a JWT signing key.
+func generateRandomSecret(n int) (string, error) {
+	b := make([]byte, n)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(b), nil
 }
 
 func getEnv(key, fallback string) string {
@@ -100,9 +130,6 @@ func main() {
 		IdleTimeout:  60 * time.Second,
 	}
 
-	// Run the server in a goroutine so main() can block on a shutdown
-	// signal below (graceful shutdown, not required by the brief but
-	// good practice for anything that gets deployed).
 	go func() {
 		log.Printf("ticket-system listening on :%s", cfg.port)
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
