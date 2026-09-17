@@ -1,5 +1,15 @@
 # Ticket System — Backend Intern Assignment
 
+## Submission
+
+| Item                        | Link                                                                 |
+|-----------------------------|----------------------------------------------------------------------|
+| **GitHub Repository**       | https://github.com/manishpatel00/ticket-system                       |
+| **Deployed Application URL**| https://ticket-system-it9n.onrender.com                              |
+| **Public Health Check URL** | https://ticket-system-it9n.onrender.com/health                       |
+
+---
+
 A small REST API where a user can register, log in, create tickets, list
 and view only their own tickets, and move a ticket through a fixed status
 workflow (`open → in_progress → closed`, with `closed` as a terminal
@@ -194,9 +204,9 @@ Dockerfile:
    this app defaults to `8080` and the Dockerfile also sets `ENV
    PORT=8080`; if Render injects a different `PORT` value it will still
    be picked up since the app reads `os.Getenv("PORT")`.)
-5. Deploy. Render gives you a public URL like
-   `https://ticket-system-xxxx.onrender.com`; `/health` on that URL is
-   your public health-check URL.
+5. Deploy. The live public URL is
+   `https://ticket-system-it9n.onrender.com`; `/health` on that URL is
+   the public health-check URL.
 
 Other free-tier options that work the same way (push a Dockerfile,
 connect a repo, set `JWT_SECRET`): [Fly.io](https://fly.io) and
@@ -213,8 +223,8 @@ request, retrying once after a short wait should succeed.
 
 ## Submission checklist
 
-- [ ] GitHub repository link
-- [ ] Deployed application URL
-- [ ] Public `/health` URL
-- [ ] This README (local run, Docker run, deployment URL, assumptions)
-- [ ] `.env.example`
+- [x] GitHub repository link — https://github.com/manishpatel00/ticket-system
+- [x] Deployed application URL — https://ticket-system-it9n.onrender.com
+- [x] Public `/health` URL — https://ticket-system-it9n.onrender.com/health
+- [x] This README (local run, Docker run, deployment URL, assumptions)
+- [x] `.env.example`
