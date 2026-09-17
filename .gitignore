@@ -1,0 +1,11 @@
+# Binaries
+/ticket-system
+*.exe
+*.test
+
+# Local env files (never commit real secrets)
+.env
+
+# OS / editor cruft
+.DS_Store
+*.swp
